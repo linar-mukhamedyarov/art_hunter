@@ -1,0 +1,33 @@
+{
+  "cities": [
+    {"name": "Kyoto",   "name_ja": "京都", "days": 1, "order": 1},
+    {"name": "Fukuoka", "name_ja": "福岡", "days": 2, "order": 2},
+    {"name": "Tokyo",   "name_ja": "東京", "days": 2, "order": 3}
+  ],
+  "categories": [
+    {
+      "id": "swords",
+      "name_ru": "Самурайские мечи (нихонто)",
+      "name_en": "Samurai swords (nihonto)",
+      "name_ja": "日本刀",
+      "periods": ["Камакура (1185–1333)", "Муромати (1336–1573)", "Эдо (1603–1868)"]
+    },
+    {
+      "id": "armor",
+      "name_ru": "Доспехи (ёрои, кабуто)",
+      "name_en": "Armor (yoroi, kabuto)",
+      "name_ja": "甲冑（鎧・兜）"
+    },
+    {
+      "id": "kamai",
+      "name_ru": "Камаи (кама)",
+      "name_en": "Kama (kamai)",
+      "name_ja": "鎌"
+    }
+  ],
+  "date_range": {
+    "start": "2026-05-09",
+    "duration_days": 5
+  },
+  "collector_profile": "private collector, serious level, samurai weapons specialist"
+}
