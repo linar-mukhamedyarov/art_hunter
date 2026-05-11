@@ -1,0 +1,29 @@
+{
+  "artists": [
+    {
+      "id": "schulz",
+      "name_ru": "Шульц (Schulz)",
+      "name_en": "Charles M. Schulz",
+      "search_terms": ["Schulz", "Peanuts", "Charlie Brown", "Snoopy original"],
+      "notes": "Оригиналы стрипов и иллюстраций Peanuts"
+    },
+    {
+      "id": "aivazovsky",
+      "name_ru": "Айвазовский",
+      "name_en": "Ivan Aivazovsky",
+      "search_terms": ["Aivazovsky", "Aivazovskiy", "Aivazovski", "Ivan Konstantinovich"],
+      "notes": "Морские пейзажи, русская живопись XIX века"
+    },
+    {
+      "id": "old_masters",
+      "name_ru": "Старые мастера",
+      "name_en": "Old Masters",
+      "search_terms": [
+        "Rembrandt", "Rubens", "Van Dyck", "Vermeer",
+        "Caravaggio", "Raphael", "Titian", "Velazquez",
+        "Frans Hals", "Jan Steen", "Pieter Bruegel"
+      ],
+      "notes": "Европейская живопись XIV–XVIII вв."
+    }
+  ]
+}

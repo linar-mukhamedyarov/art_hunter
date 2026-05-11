@@ -19,10 +19,12 @@ def claude_call(
     model: str,
     web_search: bool = False,
     step_name: str = "unknown",
+    mcp_config: str = None,
+    logs_dir: str = None,
 ) -> str:
     """
     Call Claude CLI via subprocess and return the text result.
-    Logs every call to logs/calls_YYYYMMDD.jsonl.
+    Logs every call to logs/calls_YYYYMMDD.jsonl (or logs_dir if provided).
     Raises RuntimeError on non-zero exit or empty response.
     """
     # On Windows, claude is a .cmd file — must be called via cmd /c
@@ -36,7 +38,10 @@ def claude_call(
         "--system-prompt", system_prompt,
     ]
 
-    if web_search:
+    if mcp_config:
+        # MCP mode: register external server; skip --tools flag entirely
+        cmd += ["--mcp-config", mcp_config]
+    elif web_search:
         # --tools enables the built-in WebSearch/WebFetch tools
         cmd += ["--tools", "WebSearch,WebFetch"]
     else:
@@ -57,19 +62,19 @@ def claude_call(
 
     if proc.returncode != 0:
         err = (proc.stderr or "unknown error")[:500]
-        _log(step_name, model, prompt, "", elapsed_ms, error=err)
+        _log(step_name, model, prompt, "", elapsed_ms, error=err, logs_dir=logs_dir)
         raise RuntimeError(f"[{step_name}] claude exit {proc.returncode}: {err}")
 
     raw = proc.stdout.strip()
     if not raw:
-        _log(step_name, model, prompt, "", elapsed_ms, error="empty stdout")
+        _log(step_name, model, prompt, "", elapsed_ms, error="empty stdout", logs_dir=logs_dir)
         raise RuntimeError(f"[{step_name}] claude returned empty output")
 
     try:
         data = json.loads(raw)
     except json.JSONDecodeError:
         # plain-text fallback (shouldn't happen with --output-format json)
-        _log(step_name, model, prompt, raw, elapsed_ms)
+        _log(step_name, model, prompt, raw, elapsed_ms, logs_dir=logs_dir)
         return raw
 
     text = data.get("result", "")
@@ -77,7 +82,7 @@ def claude_call(
     duration = data.get("duration_ms", elapsed_ms)
     usage = data.get("usage", {})
 
-    _log(step_name, model, prompt, text, duration, cost=cost, usage=usage)
+    _log(step_name, model, prompt, text, duration, cost=cost, usage=usage, logs_dir=logs_dir)
     return text
 
 
@@ -90,9 +95,13 @@ def _log(
     cost: float = 0.0,
     usage: dict = None,
     error: str = None,
+    logs_dir: str = None,
 ):
+    target_dir = Path(logs_dir) if logs_dir else LOGS_DIR
+    target_dir.mkdir(parents=True, exist_ok=True)
+
     today = datetime.now().strftime("%Y%m%d")
-    log_file = LOGS_DIR / f"calls_{today}.jsonl"
+    log_file = target_dir / f"calls_{today}.jsonl"
 
     entry = {
         "timestamp": datetime.now().isoformat(),
@@ -101,8 +110,8 @@ def _log(
         "duration_ms": duration_ms,
         "cost_usd": cost,
         "usage": usage or {},
-        "prompt_preview": prompt[:300] + "…" if len(prompt) > 300 else prompt,
-        "response_preview": response[:600] + "…" if len(response) > 600 else response,
+        "prompt_preview": prompt[:300] + "..." if len(prompt) > 300 else prompt,
+        "response_preview": response[:600] + "..." if len(response) > 600 else response,
     }
     if error:
         entry["error"] = error
