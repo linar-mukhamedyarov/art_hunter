@@ -24,15 +24,16 @@ from cli import claude_call
 
 CONFIG_FILE = PROJECT_ROOT / "config" / "trip.json"
 PROMPTS_DIR = PROJECT_ROOT / "prompts"
-OUTPUT_DIR  = PROJECT_ROOT / "output"
+OUTPUT_DIR = PROJECT_ROOT / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-MODEL_SEARCH   = "claude-haiku-4-5-20251001"  # fast, cheap — web search
-MODEL_VALIDATE = "claude-sonnet-4-6"           # balanced — verification
-MODEL_REPORT   = "claude-opus-4-7"             # best reasoning — final report
+MODEL_SEARCH = "claude-haiku-4-5-20251001"  # fast, cheap — web search
+MODEL_VALIDATE = "claude-sonnet-4-6"  # balanced — verification
+MODEL_REPORT = "claude-opus-4-7"  # best reasoning — final report
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
+
 
 def load_config() -> dict:
     with open(CONFIG_FILE, encoding="utf-8") as f:
@@ -55,33 +56,34 @@ def _days_word(n: int) -> str:
 
 # ── pipeline steps ────────────────────────────────────────────────────────────
 
+
 def search_city(city: dict, categories: list) -> str:
     print(f"\n[SEARCH/Haiku] {city['name']} ({city['name_ja']})…")
 
     cats = "\n".join(
-        f"  - {c['name_ru']} ({c['name_en']}, {c.get('name_ja','')})"
+        f"  - {c['name_ru']} ({c['name_en']}, {c.get('name_ja', '')})"
         + (f"  — периоды: {', '.join(c['periods'])}" if c.get("periods") else "")
         for c in categories
     )
 
-    user_msg = f"""Город: {city['name']} ({city['name_ja']})
-Дней в городе: {city['days']} {_days_word(city['days'])}
+    user_msg = f"""Город: {city["name"]} ({city["name_ja"]})
+Дней в городе: {city["days"]} {_days_word(city["days"])}
 
 Категории поиска:
 {cats}
 
 Поисковые запросы на японском (используй WebSearch):
-  日本刀 販売 {city['name_ja']}
-  刀剣 ギャラリー {city['name_ja']}
-  甲冑 専門店 {city['name_ja']}
-  鎌 古武器 {city['name_ja']}
-  NBTHK 加盟 刀剣商 {city['name_ja']}
+  日本刀 販売 {city["name_ja"]}
+  刀剣 ギャラリー {city["name_ja"]}
+  甲冑 専門店 {city["name_ja"]}
+  鎌 古武器 {city["name_ja"]}
+  NBTHK 加盟 刀剣商 {city["name_ja"]}
 
 Поисковые запросы на английском (используй WebSearch):
-  nihonto dealer {city['name']}
-  samurai sword gallery {city['name']}
-  antique japanese armor {city['name']}
-  NBTHK member dealer {city['name']}
+  nihonto dealer {city["name"]}
+  samurai sword gallery {city["name"]}
+  antique japanese armor {city["name"]}
+  NBTHK member dealer {city["name"]}
 """
 
     result = claude_call(
@@ -99,8 +101,7 @@ def validate_all(search_results: dict) -> str:
     print(f"\n[VALIDATE/Sonnet] Проверяю {len(search_results)} городов…")
 
     blocks = "\n\n".join(
-        f"=== {city} ===\n{text}"
-        for city, text in search_results.items()
+        f"=== {city} ===\n{text}" for city, text in search_results.items()
     )
     user_msg = f"Проверь следующие галереи:\n\n{blocks}"
 
@@ -116,7 +117,7 @@ def validate_all(search_results: dict) -> str:
 
 
 def generate_report(validated: str, config: dict) -> str:
-    print(f"\n[REPORT/Opus] Генерирую отчёт…")
+    print("\n[REPORT/Opus] Генерирую отчёт…")
 
     route = " → ".join(
         f"{c['name']} ({c['days']} {_days_word(c['days'])})"
@@ -125,7 +126,7 @@ def generate_report(validated: str, config: dict) -> str:
     cats = ", ".join(c["name_ru"] for c in config["categories"])
 
     user_msg = f"""Маршрут: {route}
-Даты: с {config['date_range']['start']}, {config['date_range']['duration_days']} дней
+Даты: с {config["date_range"]["start"]}, {config["date_range"]["duration_days"]} дней
 Категории: {cats}
 
 --- ПРОВЕРЕННЫЕ ДАННЫЕ ГАЛЕРЕЙ ---
@@ -167,22 +168,19 @@ def print_cost_summary():
             except Exception:
                 pass
 
-    total = sum(c.get("cost_usd", 0) for c in calls)
-    print("\n" + "─" * 55)
-    print(f"{'Шаг':<32} {'Модель':<10} {'Стоимость':>10}  {'Время':>7}")
-    print("─" * 55)
+    print("\n" + "─" * 47)
+    print(f"{'Шаг':<32} {'Модель':<10} {'Время':>4}")
+    print("─" * 47)
     for c in calls:
-        step  = c.get("step", "?")[:31]
-        model = c.get("model", "?").split("-")[1] if "-" in c.get("model","") else "?"
-        cost  = c.get("cost_usd", 0)
-        dur   = c.get("duration_ms", 0) / 1000
-        print(f"{step:<32} {model:<10} ${cost:>8.4f}  {dur:>5.1f}s")
-    print("─" * 55)
-    print(f"{'ИТОГО':<32} {'':10} ${total:>8.4f}")
-    print("─" * 55)
+        step = c.get("step", "?")[:31]
+        model = c.get("model", "?").split("-")[1] if "-" in c.get("model", "") else "?"
+        dur = c.get("duration_ms", 0) / 1000
+        print(f"{step:<32} {model:<10} {dur:>4.1f}s")
+    print("─" * 47)
 
 
 # ── main ──────────────────────────────────────────────────────────────────────
+
 
 def main():
     print("=" * 55)
@@ -192,7 +190,7 @@ def main():
 
     config = load_config()
     cities = sorted(config["cities"], key=lambda x: x["order"])
-    cats   = config["categories"]
+    cats = config["categories"]
     print(f"Маршрут: {' → '.join(c['name'] for c in cities)}")
     print(f"Категории: {', '.join(c['name_ru'] for c in cats)}\n")
 
@@ -205,7 +203,9 @@ def main():
             print(f"  [ERROR] {e}")
             search_results[city["name"]] = f"SEARCH_FAILED: {e}"
 
-    good = {k: v for k, v in search_results.items() if not v.startswith("SEARCH_FAILED")}
+    good = {
+        k: v for k, v in search_results.items() if not v.startswith("SEARCH_FAILED")
+    }
     if not good:
         print("\n[FATAL] Поиск не дал результатов. Проверь интернет и claude CLI.")
         sys.exit(1)
@@ -218,8 +218,7 @@ def main():
         print(f"  [WARN] Валидация не удалась: {e}")
         print("  Использую сырые результаты поиска…")
         validated = "\n\n".join(
-            f"=== {k} (NOT VALIDATED) ===\n{v}"
-            for k, v in good.items()
+            f"=== {k} (NOT VALIDATED) ===\n{v}" for k, v in good.items()
         )
 
     # ── Step 3: generate report ───────────────────────────────────────────────
