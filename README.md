@@ -15,6 +15,12 @@
 
 ---
 
+## Видео демонстрации работы
+
+https://drive.google.com/file/d/1Wa6uXr65DZBH3lDTpVw3wotQbna2B9oc/view?usp=sharing
+
+---
+
 ## Архитектура
 
 ```mermaid
